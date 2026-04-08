@@ -1,4 +1,4 @@
-from mian import limpar_tarefas, mostrar_por_status, mudar_status, listar_tarefas, adicionar_tarefa, deletar_tarefa
+from main import limpar_tarefas, mostrar_por_status, mudar_status, listar_tarefas, adicionar_tarefa, deletar_tarefa
 
 
 def menu():
