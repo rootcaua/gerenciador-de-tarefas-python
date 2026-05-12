@@ -1,19 +1,35 @@
 tarefas = []
-status = ["A fazer", "Fazendo", "Feito"]
+status_disponiveis = ["A fazer", "Fazendo", "Feito"]
 
 
 def adicionar_status(status_dado):
-    status.append(status_dado)
+    status_dado = status_dado.strip()
+
+    if not status_dado:
+        print("Status vazio nao pode ser adicionado.")
+        return False
+
+    if status_dado in status_disponiveis:
+        print("Esse status ja existe.")
+        return False
+
+    status_disponiveis.append(status_dado)
+    print("Status adicionado!")
+    return True
 
 
 def adicionar_tarefa():
-    titulo = input("Título: ")
-    responsavel = input("Responsável: ")
+    titulo = input("Titulo: ").strip()
+    responsavel = input("Responsavel: ").strip()
+
+    if not titulo or not responsavel:
+        print("Titulo e responsavel sao obrigatorios.")
+        return
 
     tarefa = {
         "titulo": titulo,
         "responsavel": responsavel,
-        "status": "A fazer"
+        "status": "A fazer",
     }
 
     tarefas.append(tarefa)
@@ -23,84 +39,137 @@ def adicionar_tarefa():
 def listar_tarefas():
     if not tarefas:
         print("Nenhuma tarefa cadastrada.")
-        return
+        return False
 
-    for i, tarefa in enumerate(tarefas):
-        print(f"{i+1} - {tarefa['titulo']} | {tarefa['responsavel']} | {tarefa['status']}")
+    for i, tarefa in enumerate(tarefas, start=1):
+        print(f"{i} - {tarefa['titulo']} | {tarefa['responsavel']} | {tarefa['status']}")
+
+    return True
+
+
+def escolher_tarefa():
+    if not listar_tarefas():
+        return None
+
+    try:
+        posicao = int(input("Informe o numero da tarefa: "))
+    except ValueError:
+        print("Digite um numero valido.")
+        return None
+
+    indice = posicao - 1
+    if indice < 0 or indice >= len(tarefas):
+        print("Tarefa nao encontrada.")
+        return None
+
+    return indice
+
+
+def mostrar_status_disponiveis():
+    print("Status disponiveis:")
+    for status in status_disponiveis:
+        print(f"- {status}")
 
 
 def mudar_status():
-    try:
-        listar_tarefas()
-        tarefa_alterar = input("Qual tarefa deseja alterar? ")
-        encontrada = False
-        novo_status = None
-        for tarefa in tarefas:
-            if tarefa["titulo"] == tarefa_alterar:
-                encontrada = True
-                adicionado = None
-                print('Esses são os status adicionados até o momento: ')
-                for status_adicionado in status:
-                    print(status_adicionado)
-                novo_status = input("Qual será o novo status? ")
-                for status_adicionado in status:
-                    if novo_status == status_adicionado:
-                        adicionado = True
-                if not adicionado:
+    indice = escolher_tarefa()
+    if indice is None:
+        return
 
-                    status_adicionar = input('Vimos que este status não está na sua lista de status, deseja adicioná-lo a lista? (S/N)').lower().strip()
-                    if status_adicionar == "s":
-                        adicionar_status(novo_status)
-                    else:
-                        print("Certo, ele não será adicionado a lista de status porém o status da tarefa sera mudado.")
+    mostrar_status_disponiveis()
+    novo_status = input("Qual sera o novo status? ").strip()
 
-                tarefa["status"] = novo_status
-                print("Status alterado com sucesso!")
-                break
+    if not novo_status:
+        print("Status vazio nao e valido.")
+        return
 
-        if not encontrada:
-            print("Tarefa não encontrada, tente novamente!")
+    if novo_status not in status_disponiveis:
+        resposta = input("Esse status nao existe. Deseja adiciona-lo? (S/N) ").lower().strip()
+        if resposta == "s":
+            adicionar_status(novo_status)
+        else:
+            print("Status nao alterado.")
+            return
 
-    except:
-        print("Algum erro inesperado ocorreu, tente novamente!")
+    tarefas[indice]["status"] = novo_status
+    print("Status alterado com sucesso!")
 
 
 def mostrar_por_status():
-    quantidade = 0
-    for status_adicionado in status:
-        print(status_adicionado)
-    status_selecionado = input('Deseja mostrar por qual status?')
+    mostrar_status_disponiveis()
+    status_selecionado = input("Deseja mostrar por qual status? ").strip()
 
-    try:
-        for i, tarefa in enumerate(tarefas):
-            if tarefa["status"] == status_selecionado:
-                quantidade += 1
-                print(f"{i+1} | {tarefa['titulo']} | {tarefa['responsavel']} | {tarefa['status']}")
+    encontradas = [
+        (i, tarefa)
+        for i, tarefa in enumerate(tarefas, start=1)
+        if tarefa["status"] == status_selecionado
+    ]
 
-        print(f"Foram encontradas {quantidade} tarefas")
+    if not encontradas:
+        print("Nenhuma tarefa encontrada para esse status.")
+        return
 
-    except:
-        print("Algum erro inesperado aconteceu!")
+    for i, tarefa in encontradas:
+        print(f"{i} - {tarefa['titulo']} | {tarefa['responsavel']} | {tarefa['status']}")
+
+    print(f"Foram encontradas {len(encontradas)} tarefas.")
 
 
 def deletar_tarefa():
-    listar_tarefas()
-    try:
-        tarefa_pos = int(input('Qual é a posição da tarefa que deseja deletar?')) - 1
-        for i, tarefa in enumerate(tarefas):
-            if i == tarefa_pos:
-                print(f"{i+1} | {tarefa['titulo']} | {tarefa['responsavel']} | {tarefa['status']}")
-                confirm = input('Deseja realmente deletar esta tarefa? (S/N)').lower().strip()
-                if confirm == "s":
-                    tarefas.pop(i)
-                    print('Tarefa deletada com sucesso!')
-                else:
-                    print('Ação cancelada.')
+    indice = escolher_tarefa()
+    if indice is None:
+        return
 
-    except:
-        print("Algum erro inesperado aconteceu, tente novamente!")
+    tarefa = tarefas[indice]
+    print(f"{indice + 1} - {tarefa['titulo']} | {tarefa['responsavel']} | {tarefa['status']}")
+
+    confirmacao = input("Deseja realmente deletar esta tarefa? (S/N) ").lower().strip()
+    if confirmacao == "s":
+        tarefas.pop(indice)
+        print("Tarefa deletada com sucesso!")
+    else:
+        print("Acao cancelada.")
 
 
 def limpar_tarefas():
-    global tarefas
-    tarefas = []
+    tarefas.clear()
+    print("Todas as tarefas foram removidas.")
+
+
+def exibir_menu():
+    print()
+    print("[1] Adicionar tarefa")
+    print("[2] Listar tarefas")
+    print("[3] Mudar status")
+    print("[4] Mostrar por status")
+    print("[5] Deletar tarefa")
+    print("[6] Limpar tarefas")
+    print("[0] Sair")
+
+
+def executar_menu():
+    while True:
+        exibir_menu()
+        opcao = input("Qual acao deseja executar? ").strip()
+
+        if opcao == "1":
+            adicionar_tarefa()
+        elif opcao == "2":
+            listar_tarefas()
+        elif opcao == "3":
+            mudar_status()
+        elif opcao == "4":
+            mostrar_por_status()
+        elif opcao == "5":
+            deletar_tarefa()
+        elif opcao == "6":
+            limpar_tarefas()
+        elif opcao == "0":
+            print("Ate logo!")
+            break
+        else:
+            print("Opcao invalida. Tente novamente.")
+
+
+if __name__ == "__main__":
+    executar_menu()
