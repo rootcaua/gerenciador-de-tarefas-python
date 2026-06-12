@@ -1,6 +1,6 @@
 # Gerenciador de Tarefas em Python
 
-Aplicacao simples de terminal para cadastrar, listar, filtrar, atualizar e deletar tarefas.
+Aplicacao simples de terminal para cadastrar, listar, filtrar, atualizar e deletar tarefas
 
 ## Como executar
 
